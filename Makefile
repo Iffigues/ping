@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 NAME=ft_ping
-SRC=main.c help.c addr.c outil.c sock.c checksum.c time.c
+SRC=main.c help.c addr.c outil.c read.c checksum.c time.c opt.c signal.c
 OBJ=$(SRC:.c=.o)
 CC=gcc
 INCLUDE= -I ./

@@ -26,9 +26,11 @@
 #include <netinet/ip_icmp.h>
 #include <sys/time.h>
 #include <limits.h>
-#define PING_PKT_S 64
+#include <strings.h>
+#include <string.h> 
+#define PING_PKT_S 56
+#define BUFFSIZE 4096
 
-static int yl = 10;
 
 typedef	struct	s_pkt
 {
@@ -39,29 +41,37 @@ typedef	struct	s_pkt
 typedef struct		s_ping
 {
 	int		loop;
-	char		s[100];
+//	char		s[100];
 	char		*addr;
-	char		lddr[100];
-	char		lddrsix[100];
 	int		flags;
 	int		socket;
 	int		seq;
 	int		rec;
 	int		family;
-	struct sockaddr_in four;
-	t_pkt		pkt;
+	size_t          len;
+	struct sockaddr *s;
+	struct sockaddr *r;
+	struct addrinfo  *h;
+	struct msghdr   msg;
+   	struct iovec    iov;
+	char		*ip;
+	char            sendbuf[BUFFSIZE];
 	int		ttl;
 }			t_ping;
 
+extern t_ping     *g;
+void    sig_alrm (int signo);
+void gettype(char *a, t_ping *g);
+void get_opt(int a, char **b, t_ping *g);
 void			ft_help(char *a, int i);
-void			get_info(t_ping *g);
+char			*get_info();
 void			*ft_memset(void *b, int c, size_t len);
-void			open_socket(t_ping *g);
-void			rec_socket(t_ping *g);
 void			ft_bzero(void *s, size_t n);
 unsigned short 		checksum(void *b, int len);
 char			*ft_strcpy(char *dst, const char *src);
 int	ft_strcmp(const char *s1, const char *s2);
 suseconds_t	getRtt(struct timeval *i);
 suseconds_t	getTime();
+void    readloop(void);
+void ping();
 #endif

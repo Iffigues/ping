@@ -1,15 +1,34 @@
 #include "ft_ping.h"
 
-void get_info(t_ping *g)
+char *get_info()
 {
-	struct addrinfo			hints;
-	struct addrinfo			*res;
+	int             n;
+	struct addrinfo hints;
+	struct sockaddr_in *sin;
+	struct addrinfo *res;
+	static char str[126];
+	void *ptr;
 
-	
-	printf("%s\n", g->addr);
-	hints = (struct addrinfo){.ai_family = AF_INET};
-	if (getaddrinfo(g->addr, NULL, &hints, &res))
-		ft_help("lol", 1);
-	g->four.sin_addr.s_addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
-	freeaddrinfo(res);
-}	
+	bzero (&hints, sizeof (struct addrinfo));
+	hints.ai_flags = AI_CANONNAME;
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = 0;
+	if ((n = getaddrinfo(g->addr, NULL, &hints, &res)) != 0)
+	    ft_help("name or service not known", 1);
+	g->h = res;
+	g->len = res->ai_addrlen;
+	while (res) {
+	if (res->ai_addr->sa_family == AF_INET)
+   	{
+		ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
+        	sin = (struct sockaddr_in *) g->h;
+        	if (inet_ntop(res->ai_family, ptr, str, sizeof(str)) == NULL)
+        	    return (NULL);
+		g->s = res->ai_addr;
+        	return (str);
+    	}
+	res = res->ai_next;
+	}
+	ft_help("6",1);
+	return NULL;
+}

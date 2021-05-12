@@ -5,6 +5,9 @@ void open_socket(t_ping *g)
 
 	if ((g->socket = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0)
 		ft_help("socket", 1);
+	if (setsockopt(g->socket, IPPROTO_IP, IP_HDRINCL, \
+		(int[1]){1}, sizeof(int)) == -1)
+		ft_help("failed to set socket option", 1);
 }
 
 
@@ -80,9 +83,10 @@ static int pinger(t_ping *g)
 	for( i=8; i<datalen; i++)	/* skip 8 for time */
 		*datap++ = i;
 	icp->icmp_cksum = in_cksum( (u_short *)icp, cc );
-	sendto(g->socket, outpack, cc, 0, (struct sockaddr*)&g->four, sizeof(struct sockaddr));
+	return sendto(g->socket, outpack, cc, 0, (const struct sockaddr*)&g->four, sizeof(struct sockaddr));
 }
 
+#include <strings.h>
 
 static void ipvfour(t_ping *g)
 {
@@ -90,14 +94,17 @@ static void ipvfour(t_ping *g)
 	int addr_len;
 	int flag;
 	int c;
-
+	u_char	packet[4096];
+	int len = sizeof (packet);
 	c = 0;
 	flag = 0;
 	aff_head(g);
 	while (g->loop)
 	{
 		flag = 1;
-		if (pinger(g) <= 0)
+		 bzero(&g->pkt, sizeof(g->pkt));
+		 make_pkt(g);
+		if (sendto(g->socket, &g->pkt, sizeof(g->pkt), 0, (const struct sockaddr*)&g->four, sizeof(struct sockaddr)) <= 0)
 			flag = printf("\nPacket Sending Failed!\n") - 24;
 		addr_len=sizeof(r_addr);
 		if ( recvfrom(g->socket, &g->pkt, sizeof(g->pkt), 0, (struct sockaddr*)&r_addr, &addr_len) <= 0 && g->seq > 1) 
@@ -120,7 +127,6 @@ static void ipvfour(t_ping *g)
 
 void rec_socket(t_ping *g)
 {
-	printf("%d\n",yl);
 
 	ipvfour(g);
 }
