@@ -9,6 +9,9 @@ void poong()
 
 void intHandler(int dummy)
 {
+  g->loop = 0;
+  close(g->socket);
+  freeaddrinfo(g->h);
   exit(0);
 }
 
@@ -26,19 +29,18 @@ void open_socket()
 		ft_help("failed to set socket option", 1);
 	// setting timeout of recv setting
  	//setsockopt(g->socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv_out, sizeof tv_out);
-	//int on = 1;
+//	int on = 1;
 	 //if (setsockopt(g->socket, IPPROTO_IP, IP_HDRINCL, &on, sizeof(on)) < 0){
 	// 	perror("zz");
 	 //}
-	//	int ttl = 64;
-  /*if (setsockopt(g->socket, SOL_SOCKET, SO_TIMESTAMP, &on, (int)sizeof(on)) != 0)
+/*		int ttl = 64;
+  if (setsockopt(g->socket, SOL_SOCKET, SO_TIMESTAMP, &on, (int)sizeof(on)) != 0)
     fprintf(stderr, "\nSetting socket options to TIMESTAMP failed!\n");
   if (setsockopt(g->socket, IPPROTO_IP, IP_RECVTTL, &on, (int)sizeof(on)) != 0)
     fprintf(stderr, "\nSetting socket options to RECVTTL failed!\n");
   if (setsockopt(g->socket, SOL_IP, IP_TTL, &ttl, sizeof(ttl)) != 0)
     fprintf(stderr, "\nSetting socket options to TTL failed!\n");
 */
-
 
 }
 
@@ -70,5 +72,7 @@ int main(int argc, char **argv)
 	g->r = NULL;
 	get_opt(argc, argv, g);
 	start();
+	close(g->socket);
+	freeaddrinfo(g->h);
 	return (0);
 }

@@ -41,7 +41,6 @@ typedef	struct	s_pkt
 typedef struct		s_ping
 {
 	int		loop;
-//	char		s[100];
 	char		*addr;
 	int		flags;
 	int		socket;
@@ -57,6 +56,9 @@ typedef struct		s_ping
 	char		*ip;
 	char            sendbuf[BUFFSIZE];
 	int		ttl;
+	double		rttmin;
+	double 		rttmax;
+	double		avg;
 }			t_ping;
 
 extern t_ping     *g;

@@ -41,25 +41,53 @@ void ping(int i)
 	alarm(1);
 }
 
-void readmsg(struct msghdr  *ptr, int len, char * pck, int *cc)	
+void getRtts(struct timeval *out, struct timeval *in) {
+	out->tv_usec  = out->tv_usec - in->tv_usec;
+	if (out->tv_usec < 0)
+    {
+
+        out->tv_sec--;
+        out->tv_usec += 1000000;
+
+    }
+    out->tv_sec = out->tv_sec - in->tv_sec;
+}
+
+void rtt(struct timeval *a, struct timeval *b)
+{
+	double rtt;
+
+	rtt = 0;
+	getRtts(a, b);
+	rtt = a->tv_sec * 1000.0 + a->tv_usec / 1000.0;
+	if (g->rec == 0) {
+		g->rttmin = rtt;
+		g->rttmax = rtt;
+	} else {
+		if (rtt < g->rttmin)
+			g->rttmin = rtt;
+		if (rtt > g->rttmax)
+			g->rttmax = rtt;
+	}
+	printf("time=%.3f",rtt);
+	g->avg += rtt;
+}
+
+void readmsg(struct msghdr  *ptr, int len, char * pck, struct timeval *e)	
 {
 	struct cmsghdr *cmhdr;
 
 
 
-	if (len < 84)
-		return;
-	//d
 	if (!pck) {
 		ft_help("eee\n", 1);
 	}
 
-	    int             hlenl;
+	int             hlenl;
     int             icmplen;
-    double          rtt;
     struct ip       *ip;
     struct icmp     *icmp;
-    struct timeval  *tvsend;
+    struct timeval  *t;
     
     ip = (struct ip *) pck;
     hlenl = ip->ip_hl << 2;
@@ -68,10 +96,16 @@ void readmsg(struct msghdr  *ptr, int len, char * pck, int *cc)
 	    return ;
     }
     icmp = (struct icmp *) (pck + hlenl);
-    if (icmp->icmp_type != ICMP_ECHOREPLY)
+    if (icmp->icmp_type != ICMP_ECHOREPLY) {
 	    return;
+    }
+     if (icmp->icmp_id != getpid())
+            return ;
     if ((icmplen = len - hlenl) < 8)
-        return ;
+        return;
+    t = (struct timeval *) icmp->icmp_data;
+    rtt(t, e);
+    g->rec++;
     printf("uu %d = %d\n", ICMP_ECHOREPLY, icmp->icmp_seq);
 }
 
@@ -82,9 +116,11 @@ void    readloop(void)
     char            controlbuf[1500];
     ssize_t         n;
     struct timeval  tval;
-   int cc;
-
-  cc = 1;   
+   
+    g->loop = 1;
+    g->avg = 0;
+    g->rttmin = 0;
+    g->rttmax = 0;
     g->iov.iov_base = recvbuf;
     g->iov.iov_len = sizeof (recvbuf);
     g->msg.msg_name = g->r;
@@ -93,18 +129,17 @@ void    readloop(void)
     g->msg.msg_control = controlbuf;
     ping(1);
     printf("PING %s (%s): %d data bytes\n", g->h->ai_canonname ? g->h->ai_canonname : g->ip, g->ip, g->len);
-    while (1)
+    while (g->loop)
     {
         g->msg.msg_namelen = g->len;
         g->msg.msg_controllen = sizeof (controlbuf);
 	gettimeofday(&tval, NULL);
-        if ((n = recvmsg (g->socket, &g->msg, 0)) < 0) {
-		perror("z");
-         	printf("%d\n", n);
+        if ((n = recvmsg (g->socket, &g->msg, 0)) < 0)
 	     	ft_help("recvmsg error d",1);
-	}else
-    		readmsg(&g->msg,n, recvbuf, &cc);
-    }
+	gettimeofday(&tval, NULL);
+	if (g->loop)
+    		readmsg(&g->msg,n, recvbuf, &tval);
+	}
     return ;
 }
 
