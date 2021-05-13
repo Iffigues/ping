@@ -29,7 +29,7 @@ void ping(int i)
 	icmp = (struct icmp *) g->sendbuf;
     	icmp->icmp_type = ICMP_ECHO;
     	icmp->icmp_code = 0;
-    	icmp->icmp_id = getpid();
+    	icmp->icmp_id = g->pid;
     	icmp->icmp_seq = g->seq++;
     	memset (icmp->icmp_data, 0xa5, g->len);
     	gettimeofday ((struct timeval *) icmp->icmp_data, NULL);
@@ -53,7 +53,7 @@ void getRtts(struct timeval *out, struct timeval *in) {
     out->tv_sec = out->tv_sec - in->tv_sec;
 }
 
-void rtt(struct timeval *a, struct timeval *b)
+double  rtt(struct timeval *a, struct timeval *b)
 {
 	double rtt;
 
@@ -69,8 +69,8 @@ void rtt(struct timeval *a, struct timeval *b)
 		if (rtt > g->rttmax)
 			g->rttmax = rtt;
 	}
-	printf("time=%.3f",rtt);
 	g->avg += rtt;
+	return rtt;
 }
 
 void readmsg(struct msghdr  *ptr, int len, char * pck, struct timeval *e)	
@@ -88,25 +88,29 @@ void readmsg(struct msghdr  *ptr, int len, char * pck, struct timeval *e)
     struct ip       *ip;
     struct icmp     *icmp;
     struct timeval  *t;
-    
+    double rtts;
+
     ip = (struct ip *) pck;
     hlenl = ip->ip_hl << 2;
     if (ip->ip_p != IPPROTO_ICMP) {
-	    printf("zzz\n");
 	    return ;
     }
     icmp = (struct icmp *) (pck + hlenl);
     if (icmp->icmp_type != ICMP_ECHOREPLY) {
 	    return;
     }
-     if (icmp->icmp_id != getpid())
+    printf("icmp = %d %d\n", icmp->icmp_type, ICMP_ECHOREPLY);
+     if (icmp->icmp_id != g->pid)
             return ;
     if ((icmplen = len - hlenl) < 8)
         return;
     t = (struct timeval *) icmp->icmp_data;
-    rtt(t, e);
+    rtts = rtt(t, e);
     g->rec++;
-    printf("uu %d = %d\n", ICMP_ECHOREPLY, icmp->icmp_seq);
+    if (!(g->flags & 2))
+    	printf("%d bytes from %s (%s) icmp_seq=%u ttl=%d rtt=%.3f ms\n", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
+    else
+ printf("%d bytes from %s (%s) type=%d code=%d\n", icmplen, g->addr, g->ip,  icmp->icmp_type, icmp->icmp_code);	
 }
 
 void    readloop(void)
@@ -121,6 +125,7 @@ void    readloop(void)
     g->avg = 0;
     g->rttmin = 0;
     g->rttmax = 0;
+    g->seq = 1;
     g->iov.iov_base = recvbuf;
     g->iov.iov_len = sizeof (recvbuf);
     g->msg.msg_name = g->r;

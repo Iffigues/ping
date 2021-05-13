@@ -56,6 +56,7 @@ typedef struct		s_ping
 	char		*ip;
 	char            sendbuf[BUFFSIZE];
 	int		ttl;
+	int		pid;
 	double		rttmin;
 	double 		rttmax;
 	double		avg;
