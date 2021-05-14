@@ -12,6 +12,8 @@ void intHandler(int dummy)
   g->loop = 0;
   close(g->socket);
   freeaddrinfo(g->h);
+  printf("\n--- %s ping statistics ---\n", g->addr);
+  printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f ms", g->rttmin, g->rttmax, g->avg / g->rec);
   exit(0);
 }
 
@@ -19,20 +21,15 @@ void open_socket()
 {
 	int size;
 
-	size = 60 * 1024;
+	size = 84;
 	struct timeval tv_out;
-   	 tv_out.tv_sec = 4;
+   	 tv_out.tv_sec = 1;
    	 tv_out.tv_usec = 0;
 	if ((g->socket = socket(g->s->sa_family, SOCK_RAW, IPPROTO_ICMP)) < 0)
 		ft_help("socket", 1);
 	if ( setsockopt (g->socket, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size)) < 0)
 		ft_help("failed to set socket option", 1);
-	// setting timeout of recv setting
- 	//setsockopt(g->socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv_out, sizeof tv_out);
 	int on = 1;
-	// if (setsockopt(g->socket, IPPROTO_IP, IP_HDRINCL, &on, sizeof(on)) < 0){
-//		perror("zz");
-//	}
 		int ttl = 64;
   if (setsockopt(g->socket, SOL_SOCKET, SO_TIMESTAMP, &on, (int)sizeof(on)) != 0)
     fprintf(stderr, "\nSetting socket options to TIMESTAMP failed!\n");

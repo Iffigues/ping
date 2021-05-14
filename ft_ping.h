@@ -29,8 +29,11 @@
 #include <strings.h>
 #include <string.h> 
 #define PING_PKT_S 56
-#define BUFFSIZE 4096
 
+# define IP_HDR_SIZE			20
+# define ICMP_HDR_SIZE			ICMP_MINLEN
+# define ICMP_PAYLOAD_SIZE		56
+# define BUFFSIZE			(IP_HDR_SIZE + ICMP_HDR_SIZE + ICMP_PAYLOAD_SIZE)
 
 typedef	struct	s_pkt
 {

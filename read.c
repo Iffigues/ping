@@ -75,49 +75,39 @@ double  rtt(struct timeval *a, struct timeval *b)
 
 void readmsg(struct msghdr  *ptr, int len, char * pck, struct timeval *e)	
 {
-	struct cmsghdr *cmhdr;
 
-
-
-	if (!pck) {
-		ft_help("eee\n", 1);
-	}
-
-	int             hlenl;
     int             icmplen;
     struct ip       *ip;
     struct icmp     *icmp;
     struct timeval  *t;
     double rtts;
 
+     if (!pck)
+	ft_help("empty packet\n", 1);
     ip = (struct ip *) pck;
-    hlenl = ip->ip_hl << 2;
     if (ip->ip_p != IPPROTO_ICMP) {
 	    return ;
     }
-    icmp = (struct icmp *) (pck + hlenl);
+    icmp = (struct icmp *) (pck + (ip->ip_hl << 2));
     if (icmp->icmp_type != ICMP_ECHOREPLY) {
 	    return;
     }
-    printf("icmp = %d %d\n", icmp->icmp_type, ICMP_ECHOREPLY);
      if (icmp->icmp_id != g->pid)
             return ;
-    if ((icmplen = len - hlenl) < 8)
-        return;
     t = (struct timeval *) icmp->icmp_data;
-    rtts = rtt(t, e);
+    rtts = rtt(e, t);
     g->rec++;
-    if (!(g->flags & 2))
-    	printf("%d bytes from %s (%s) icmp_seq=%u ttl=%d rtt=%.3f ms\n", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
-    else
- printf("%d bytes from %s (%s) type=%d code=%d\n", icmplen, g->addr, g->ip,  icmp->icmp_type, icmp->icmp_code);	
+    printf("%d bytes from %s (%s) icmp_seq=%u ttl=%d rtt=%.3f ms", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
+    if (g->flags & 2)
+ 	printf(" type=%d code=%d", icmp->icmp_type, icmp->icmp_code);
+    printf("\n");
 }
 
 void    readloop(void)
 {
 
-    char            recvbuf[1500];
-    char            controlbuf[1500];
+    char            recvbuf[BUFFSIZE];
+    char            controlbuf[BUFFSIZE];
     ssize_t         n;
     struct timeval  tval;
    
@@ -132,8 +122,8 @@ void    readloop(void)
     g->msg.msg_iov = &g->iov;
     g->msg.msg_iovlen = 1;
     g->msg.msg_control = controlbuf;
+    printf("PING %s (%s): %d data bytes\n", g->h->ai_canonname ? g->h->ai_canonname : g->ip, g->ip, BUFFSIZE);
     ping(1);
-    printf("PING %s (%s): %d data bytes\n", g->h->ai_canonname ? g->h->ai_canonname : g->ip, g->ip, g->len);
     while (g->loop)
     {
         g->msg.msg_namelen = g->len;
