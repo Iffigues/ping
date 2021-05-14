@@ -14,6 +14,7 @@ void intHandler(int dummy)
   freeaddrinfo(g->h);
   printf("\n--- %s ping statistics ---\n", g->addr);
   printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f ms", g->rttmin, g->rttmax, g->avg / g->rec);
+  free(g);
   exit(0);
 }
 
@@ -37,7 +38,6 @@ void open_socket()
     fprintf(stderr, "\nSetting socket options to RECVTTL failed!\n");
   if (setsockopt(g->socket, SOL_IP, IP_TTL, &ttl, sizeof(ttl)) != 0)
     fprintf(stderr, "\nSetting socket options to TTL failed!\n");
-
 
 }
 
@@ -70,5 +70,6 @@ int main(int argc, char **argv)
 	g->pid = getpid();
 	get_opt(argc, argv, g);
 	start();
+	free(g);
 	return (0);
 }

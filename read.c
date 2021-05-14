@@ -73,7 +73,30 @@ double  rtt(struct timeval *a, struct timeval *b)
 	return rtt;
 }
 
-void readmsg(struct msghdr  *ptr, int len, char * pck, struct timeval *e)	
+char *mm(struct msghdr *ptr)
+{
+	struct msghdr msgh;
+struct cmsghdr *cmsg;
+int *ttlptr;
+int received_ttl;
+
+/* Receive auxiliary data in msgh */
+	for (cmsg = CMSG_FIRSTHDR(&msgh); cmsg != NULL; cmsg = CMSG_NXTHDR(&msgh,cmsg)) {
+	    if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_TTL)
+	    {
+	      char *ttlPtr = (uint8_t *)CMSG_DATA(cmsg);
+	      return ttlPtr;
+	    }
+	}
+if (cmsg == NULL) {
+    /*
+     * Error: IP_TTL not enabled or small buffer
+     * or I/O error.
+     */
+}
+}
+
+void readmsg(int len, char * pck, struct timeval *e)	
 {
 
     int             icmplen;
@@ -85,16 +108,19 @@ void readmsg(struct msghdr  *ptr, int len, char * pck, struct timeval *e)
      if (!pck)
 	ft_help("empty packet\n", 1);
     ip = (struct ip *) pck;
-    if (ip->ip_p != IPPROTO_ICMP) {
+    if (ip->ip_p != IPPROTO_ICMP)
 	    return ;
-    }
     icmp = (struct icmp *) (pck + (ip->ip_hl << 2));
-    if (icmp->icmp_type != ICMP_ECHOREPLY) {
+    if ((icmplen = len - (ip->ip_hl << 2)) < 8)
+        return ;
+    if (icmp->icmp_type != ICMP_ECHOREPLY)
 	    return;
-    }
      if (icmp->icmp_id != g->pid)
             return ;
+     if (icmplen < 16)
+            return;
     t = (struct timeval *) icmp->icmp_data;
+    printf("%ld\n", t->tv_sec);
     rtts = rtt(e, t);
     g->rec++;
     printf("%d bytes from %s (%s) icmp_seq=%u ttl=%d rtt=%.3f ms", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
@@ -128,12 +154,12 @@ void    readloop(void)
     {
         g->msg.msg_namelen = g->len;
         g->msg.msg_controllen = sizeof (controlbuf);
-	gettimeofday(&tval, NULL);
+	//gettimeofday(&tval, NULL);
         if ((n = recvmsg (g->socket, &g->msg, 0)) < 0)
 	     	ft_help("recvmsg error d",1);
 	gettimeofday(&tval, NULL);
 	if (g->loop)
-    		readmsg(&g->msg,n, recvbuf, &tval);
+    		readmsg(n, recvbuf, &tval);
 	}
     return ;
 }
