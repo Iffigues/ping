@@ -4,7 +4,6 @@ char *get_info()
 {
 	int             n;
 	struct addrinfo hints;
-	struct sockaddr_in *sin;
 	struct addrinfo *res;
 	static char str[126];
 	void *ptr;
@@ -21,7 +20,6 @@ char *get_info()
 	if (res->ai_addr->sa_family == AF_INET)
    	{
 		ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
-        	sin = (struct sockaddr_in *) g->h;
         	if (inet_ntop(res->ai_family, ptr, str, sizeof(str)) == NULL)
         	    return (NULL);
 		g->s = res->ai_addr;

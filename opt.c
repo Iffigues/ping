@@ -12,10 +12,7 @@ size_t	ft_strlen(const char *s)
 
 void gettype(char *a, t_ping *g)
 {
-	int i;
-	int b;
 
-	i = 0;
 	if (a[0] == '\0')
 		ft_help("error", 1);
 	if (a[0] == '-')
@@ -48,7 +45,7 @@ void get_opt(int a, char **b, t_ping *g)
 	while (i < a)
 		gettype(b[i++], g);
 	if (g->flags & 1)
-		ft_help("help", 0);
+		ft_help("-h: help\n-v: verbose", 0);
 	if (g->addr == NULL)
-		ft_help("NULL", 0);
+		ft_help("-h: help\n-v: verbose", 1);
 }

@@ -11,9 +11,9 @@
 # **************************************************************************** #
 
 NAME=ft_ping
-SRC=main.c help.c addr.c outil.c read.c checksum.c time.c opt.c signal.c
+SRC=main.c help.c addr.c outil.c read.c checksum.c time.c opt.c
 OBJ=$(SRC:.c=.o)
-CC=gcc
+CC=gcc -Wall -Wextra -Werror
 INCLUDE= -I ./
 all:$(NAME)
 $(NAME):$(OBJ)

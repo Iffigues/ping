@@ -26,6 +26,8 @@ void ping(int i)
 {
 	int             len;
 	struct icmp     *icmp;
+
+	(void)i;
 	icmp = (struct icmp *) g->sendbuf;
     	icmp->icmp_type = ICMP_ECHO;
     	icmp->icmp_code = 0;
@@ -59,7 +61,7 @@ double  rtt(struct timeval *a, struct timeval *b)
 
 	rtt = 0;
 	getRtts(a, b);
-	rtt = a->tv_sec * 1000.0 + a->tv_usec / 1000.0;
+	rtt = (a->tv_sec * 1000.0 + a->tv_usec / 1000.0) - PING_IHR;
 	if (g->rec == 0) {
 		g->rttmin = rtt;
 		g->rttmax = rtt;
@@ -70,30 +72,7 @@ double  rtt(struct timeval *a, struct timeval *b)
 			g->rttmax = rtt;
 	}
 	g->avg += rtt;
-	return rtt;
-}
-
-char *mm(struct msghdr *ptr)
-{
-	struct msghdr msgh;
-struct cmsghdr *cmsg;
-int *ttlptr;
-int received_ttl;
-
-/* Receive auxiliary data in msgh */
-	for (cmsg = CMSG_FIRSTHDR(&msgh); cmsg != NULL; cmsg = CMSG_NXTHDR(&msgh,cmsg)) {
-	    if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_TTL)
-	    {
-	      char *ttlPtr = (uint8_t *)CMSG_DATA(cmsg);
-	      return ttlPtr;
-	    }
-	}
-if (cmsg == NULL) {
-    /*
-     * Error: IP_TTL not enabled or small buffer
-     * or I/O error.
-     */
-}
+	return rtt ;
 }
 
 void readmsg(int len, char * pck, struct timeval *e)	
@@ -120,7 +99,6 @@ void readmsg(int len, char * pck, struct timeval *e)
      if (icmplen < 16)
             return;
     t = (struct timeval *) icmp->icmp_data;
-    printf("%ld\n", t->tv_sec);
     rtts = rtt(e, t);
     g->rec++;
     printf("%d bytes from %s (%s) icmp_seq=%u ttl=%d rtt=%.3f ms", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
