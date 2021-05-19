@@ -43,7 +43,7 @@ static void start()
 	open_socket(g);
 	signal(SIGINT, intHandler);
 	signal(SIGALRM, ping);
-	readloop();
+	pong();
 }
 
 int main(int argc, char **argv)

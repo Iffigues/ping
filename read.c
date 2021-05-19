@@ -101,13 +101,13 @@ void readmsg(int len, char * pck, struct timeval *e)
     t = (struct timeval *) icmp->icmp_data;
     rtts = rtt(e, t);
     g->rec++;
-    printf("%d bytes from %s (%s) icmp_seq=%u ttl=%d rtt=%.3f ms", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
+    printf("%d bytes from %s (%s): icmp_seq=%u ttl=%d rtt=%.3f ms", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
     if (g->flags & 2)
  	printf(" type=%d code=%d", icmp->icmp_type, icmp->icmp_code);
     printf("\n");
 }
 
-void    readloop(void)
+void    pong(void)
 {
 
     char            recvbuf[BUFFSIZE];

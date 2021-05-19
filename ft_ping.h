@@ -18,25 +18,20 @@
 # include <stdio.h>
 # include <fcntl.h>
 # include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <stdlib.h>
-#include <arpa/inet.h>
-#include <netinet/ip_icmp.h>
-#include <sys/time.h>
-#include <limits.h>
-#include <strings.h>
-#include <string.h> 
-#define PING_PKT_S 56
-#define PING_IHR  0.03
-# define BUFFSIZE 84
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netdb.h>
+# include <stdlib.h>
+# include <arpa/inet.h>
+# include <netinet/ip_icmp.h>
+# include <sys/time.h>
+# include <limits.h>
+# include <strings.h>
+# include <string.h> 
 
-typedef	struct	s_pkt
-{
-		struct icmphdr hdr;
-		char msg[PING_PKT_S-sizeof(struct icmphdr)];
-}		t_pkt;
+# define PING_PKT_S 56
+# define PING_IHR  0.03
+# define BUFFSIZE 84
 
 typedef struct		s_ping
 {
@@ -62,19 +57,19 @@ typedef struct		s_ping
 	double		avg;
 }			t_ping;
 
-extern t_ping     *g;
-void    sig_alrm (int signo);
-void gettype(char *a, t_ping *g);
-void get_opt(int a, char **b, t_ping *g);
+extern t_ping		*g;
+void			sig_alrm(int signo);
+void			gettype(char *a, t_ping *g);
+void			get_opt(int a, char **b, t_ping *g);
 void			ft_help(char *a, int i);
 char			*get_info();
 void			*ft_memset(void *b, int c, size_t len);
 void			ft_bzero(void *s, size_t n);
 unsigned short 		checksum(void *b, int len);
 char			*ft_strcpy(char *dst, const char *src);
-int	ft_strcmp(const char *s1, const char *s2);
-suseconds_t	getRtt(struct timeval *i);
-suseconds_t	getTime();
-void    readloop(void);
-void ping();
+int			ft_strcmp(const char *s1, const char *s2);
+suseconds_t		getRtt(struct timeval *i);
+suseconds_t		getTime();
+void			pong();
+void			ping();
 #endif
