@@ -32,6 +32,13 @@ void open_socket()
   if (setsockopt(g->socket, SOL_IP, IP_TTL, &ttl, sizeof(ttl)) != 0)
     fprintf(stderr, "\nSetting socket options to TTL failed!\n");
 
+	struct timeval tv_out;
+    tv_out.tv_sec = 1;
+    tv_out.tv_usec = 0;
+
+  setsockopt(g->socket, SOL_SOCKET, SO_RCVTIMEO,
+                   (const char*)&tv_out, sizeof tv_out);
+
 }
 
 static void start()

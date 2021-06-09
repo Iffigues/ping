@@ -13,7 +13,7 @@
 NAME=ft_ping
 SRC=main.c help.c addr.c outil.c read.c checksum.c time.c opt.c
 OBJ=$(SRC:.c=.o)
-CC=gcc -Wall -Wextra -Werror
+CC=gcc
 INCLUDE= -I ./
 all:$(NAME)
 $(NAME):$(OBJ)

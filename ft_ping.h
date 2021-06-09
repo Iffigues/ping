@@ -28,10 +28,10 @@
 # include <limits.h>
 # include <strings.h>
 # include <string.h> 
-
+# define datalen 64 - 8
 # define PING_PKT_S 56
 # define PING_IHR  0.03
-# define BUFFSIZE 84
+# define BUFFSIZE 4096
 
 typedef struct		s_ping
 {
@@ -49,7 +49,7 @@ typedef struct		s_ping
 	struct msghdr   msg;
    	struct iovec    iov;
 	char		*ip;
-	char            sendbuf[BUFFSIZE];
+	u_char            sendbuf[BUFFSIZE];
 	int		ttl;
 	int		pid;
 	double		rttmin;

@@ -1,0 +1,34 @@
+version: '3.7'
+networks:
+  back-tier:
+    driver: bridge
+volumes:
+  api:
+  database_postgres: 
+volumes:
+  database-data:
+services:
+    polaroid:
+      image: debian
+      restart: always
+      volumes:
+        - "./tables.sh:/tables.sh"
+      command: "sh /tables.sh"
+      expose:
+        - "8083"
+      ports:
+              - 8083:8083
+      networks:
+        - back-tier
+    polaroids:
+      image: debian
+      restart: always
+      volumes:
+        - "./tables.sh:/tables.sh"
+      command: "sh /tables.sh"
+      expose:
+        - "8084"
+      ports:
+              - 8084:8084
+      networks:
+        - back-tier
