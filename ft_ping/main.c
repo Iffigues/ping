@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 		ft_help("malloc fail", 1);		
 	g->s = NULL;
 	g->r = NULL;
-	g->pid = getpid();
+	g->pid = getpid() & 0xFFFF;
 	get_opt(argc, argv, g);
 	start();
 	free(g);

@@ -98,18 +98,18 @@ void readmsg(int len, char * pck, struct timeval *e)
     	printf("eee\n");
    	//return;
     }
-    len -= ip->ip_hl << 2;
+    //len -= ip->ip_hl << 2;
     icmp = (struct icmp *)(pck + hlen);
     if (icmp->icmp_type != ICMP_ECHOREPLY ) {
-	    printf("%d\n", icmp->icmp_type);
+	    printf("z=%d %d\n", icmp->icmp_code, icmp->icmp_type);
 	    return;
     }
     if (ip->ip_p != IPPROTO_ICMP) {
-		printf("eesd\n");
+		printf("b=eesd%d\n", ip->ip_p);
 	    return ;
     }
     printf("aaaa\n");
- /*   icmp = (struct icmp *) (pck + (ip->ip_hl << 2));
+ //   icmp = (struct icmp *) (pck + (ip->ip_hl << 2));
     if ((icmplen = len - (ip->ip_hl << 2)) < 8)
         return ;
     if (icmp->icmp_type != ICMP_ECHOREPLY) {
@@ -117,24 +117,25 @@ void readmsg(int len, char * pck, struct timeval *e)
 		    return;
 	    return;
     }
-     if (icmp->icmp_id != g->pid)
-            return ;
-     if (icmplen < 16)
-            return;
+     //if (icmp->icmp_id != g->pid)
+      //      return ;
+     //if (icmplen < 16)
+      //      return;
     t = (struct timeval *) icmp->icmp_data;
     rtts = rtt(e, t);
     g->rec++;
+    printf("a=%d %d\n", icmp->icmp_code, icmp->icmp_type);
     printf("%d bytes from %s (%s): icmp_seq=%u ttl=%d rtt=%.3f ms", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
     if (g->flags & 2)
  	printf(" type=%d code=%d", icmp->icmp_type, icmp->icmp_code);
-    printf("\n");*/
+    printf("\n");
 }
 
 void    pong(void)
 {
-
-    char            recvbuf[BUFFSIZE];
-    char            controlbuf[BUFFSIZE];
+    int si = 84;
+    char            recvbuf[si];
+    char            controlbuf[si];
     ssize_t         n;
     struct timeval  tval;
    
@@ -149,7 +150,7 @@ void    pong(void)
     g->msg.msg_iov = &g->iov;
     g->msg.msg_iovlen = 1;
     g->msg.msg_control = controlbuf;
-    printf("PING %s (%s): %d data bytes\n", g->h->ai_canonname ? g->h->ai_canonname : g->ip, g->ip, BUFFSIZE);
+    printf("PING %s (%s): %d data bytes\n", g->h->ai_canonname ? g->h->ai_canonname : g->ip, g->ip, si);
     ping(1);
     while (g->loop)
     {
