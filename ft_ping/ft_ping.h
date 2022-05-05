@@ -35,14 +35,16 @@
 
 typedef struct		s_ping
 {
+	struct timeval  tl;
 	int		loop;
 	char		*addr;
 	int		flags;
 	int		socket;
 	int		seq;
+	int		pert;
 	int		rec;
 	int		family;
-	size_t          len;
+	size_t          len;	
 	struct sockaddr *s;
 	struct sockaddr *r;
 	struct addrinfo  *h;
@@ -58,6 +60,7 @@ typedef struct		s_ping
 }			t_ping;
 
 extern t_ping		*g;
+double  rtt(struct timeval *a, struct timeval *b);
 void			sig_alrm(int signo);
 void			gettype(char *a, t_ping *g);
 void			get_opt(int a, char **b, t_ping *g);

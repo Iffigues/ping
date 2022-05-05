@@ -13,36 +13,38 @@ u_short in_cksum(u_short *addr,  int len)
 	}
 	if( nleft == 1 ) {
 		u_short	u = 0;
-		*(u_char *)(&u) = *(u_char *)w ;
+		*(u_char *)(&u) = *(u_char *)w;
 		sum += u;
 	}
-	sum = (sum >> 16) + (sum & 0xffff);	/* add hi 16 to low 16 */
-	sum += (sum >> 16);			/* add carry */
-	answer = ~sum;				/* truncate to 16 bits */
+	sum = (sum >> 16) + (sum & 0xffff);
+	sum += (sum >> 16);
+	answer = ~sum;
 	return (answer);
 }
 
 void ping(int i)
 {
 	int             len;
-	struct icmp     *icmp;
-	static u_char outpack[4096];
+	static u_char outpack[128];
+	struct icmp *icmp = (struct icmp *) outpack; 
 	u_char *datap = &outpack[8+sizeof(struct timeval)];
 
 	(void)i;
+
+	ft_bzero(outpack, sizeof(outpack));
 	icmp = (struct icmp *) outpack;
     	icmp->icmp_type = ICMP_ECHO;
     	icmp->icmp_code = 0;
-    	icmp->icmp_id = g->pid;
+    	icmp->icmp_id = g->pid & 0xffff;
     	icmp->icmp_seq = g->seq++;
-    	for( i=8; i<datalen; i++)	/* skip 8 for time */
+    	for( i=8; i<datalen; i++);
 		*datap++ = i;
     	gettimeofday ((struct timeval *) icmp->icmp_data, NULL);
     	len = datalen + 8;
     	icmp->icmp_cksum = 0;
     	icmp->icmp_cksum = in_cksum ((u_short *) icmp, len);
-    	if(sendto (g->socket, outpack, len, 0, g->s, g->len) !=  len)
-	     	ft_help("zzz",1);
+    	if(sendto (g->socket, &outpack, len, 0, g->s, g->len) !=  len) {
+	}
 	alarm(1);
 }
 
@@ -78,6 +80,7 @@ double  rtt(struct timeval *a, struct timeval *b)
 	return rtt ;
 }
 
+
 void readmsg(int len, char * pck, struct timeval *e)	
 {
 
@@ -95,40 +98,20 @@ void readmsg(int len, char * pck, struct timeval *e)
     ip = (struct ip *) pck;
     hlen = ip->ip_hl << 2;
     if (len < hlen + ICMP_MINLEN) {
-    	printf("eee\n");
-   	//return;
+	    return;
     }
-    //len -= ip->ip_hl << 2;
+    len -= hlen;
     icmp = (struct icmp *)(pck + hlen);
     if (icmp->icmp_type != ICMP_ECHOREPLY ) {
-	    printf("z=%d %d\n", icmp->icmp_code, icmp->icmp_type);
 	    return;
     }
-    if (ip->ip_p != IPPROTO_ICMP) {
-		printf("b=eesd%d\n", ip->ip_p);
-	    return ;
-    }
-    printf("aaaa\n");
- //   icmp = (struct icmp *) (pck + (ip->ip_hl << 2));
-    if ((icmplen = len - (ip->ip_hl << 2)) < 8)
-        return ;
-    if (icmp->icmp_type != ICMP_ECHOREPLY) {
-	    if (icmp->icmp_type != ICMP_ECHO)
-		    return;
+    if( icmp->icmp_id != g->pid) {
 	    return;
     }
-     //if (icmp->icmp_id != g->pid)
-      //      return ;
-     //if (icmplen < 16)
-      //      return;
     t = (struct timeval *) icmp->icmp_data;
     rtts = rtt(e, t);
     g->rec++;
-    printf("a=%d %d\n", icmp->icmp_code, icmp->icmp_type);
-    printf("%d bytes from %s (%s): icmp_seq=%u ttl=%d rtt=%.3f ms", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
-    if (g->flags & 2)
- 	printf(" type=%d code=%d", icmp->icmp_type, icmp->icmp_code);
-    printf("\n");
+    printf("%d bytes from %s (%s): icmp_seq=%u ttl=%d rtt=%.3f ms\n", icmplen, g->addr, g->ip,  icmp->icmp_seq, ip->ip_ttl, rtts);
 }
 
 void    pong(void)
@@ -138,7 +121,10 @@ void    pong(void)
     char            controlbuf[si];
     ssize_t         n;
     struct timeval  tval;
-   
+
+
+    ft_bzero(recvbuf, si);
+    ft_bzero(controlbuf, si);   
     g->loop = 1;
     g->avg = 0;
     g->rttmin = 0;
@@ -156,10 +142,8 @@ void    pong(void)
     {
         g->msg.msg_namelen = g->len;
         g->msg.msg_controllen = sizeof (controlbuf);
-	//gettimeofday(&tval, NULL);
         if ((n = recvmsg (g->socket, &g->msg, 0)) < 0) {
 	}
-	     	//ft_help("recvmsg error d",1);
 	gettimeofday(&tval, NULL);
 	if (g->loop)
     		readmsg(n, recvbuf, &tval);

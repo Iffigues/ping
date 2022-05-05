@@ -2,14 +2,55 @@
 
 t_ping *g = NULL;
 
+
+long long current() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
+    printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+}
+
+
+struct timeval hid(struct timeval begin, struct timeval end)
+{
+	struct timeval ans;
+	ans.tv_sec = end.tv_sec - begin.tv_sec;
+	ans.tv_usec = end.tv_usec - begin.tv_usec;
+	if(ans.tv_usec < 0)
+	{
+		ans.tv_sec--;
+		ans.tv_usec+=1000000;
+	}
+	return ans;
+}
+
+
+
 void intHandler(int d)
 {
+	int h = 0;
   (void)d;
+  struct timeval  tval;
+  gettimeofday(&tval, NULL);
+  struct timeval ll = hid(g->tl, tval);
+  long time = ll.tv_sec*1000+ll.tv_usec/1000;
   g->loop = 0;
   close(g->socket);
   freeaddrinfo(g->h);
   printf("\n--- %s ping statistics ---\n", g->addr);
-  printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f ms", g->rttmin, g->rttmax, g->avg / g->rec);
+  g->seq--;
+  int y = g->seq - g->rec;
+  if (y < 0)
+	  y = 0;
+  if (g->rec > 0)
+	  h = (y * 100) / g->rec;
+  else 
+	  if (g->seq > 0)
+	  	h = 100;
+  printf("%d packets transmitted, %d recceived, %d%% packet lost, time %ldms\n", g->seq, g->rec, h, time);
+  if (h != 100)
+	  printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f ms", g->rttmin, g->rttmax, g->avg / g->rec);
   free(g);
   exit(0);
 }
@@ -44,11 +85,13 @@ void open_socket()
 static void start()
 {
 	g->ip = NULL;
+	g->pert = 0;
 	g->ip = get_info();
 	if (g->family == 6)
 		ft_help("ipv6 not supported", 1);
 	open_socket(g);
 	signal(SIGINT, intHandler);
+	gettimeofday(&g->tl, NULL);
 	signal(SIGALRM, ping);
 	pong();
 }
